@@ -123,7 +123,7 @@ func (f *FormsWidget) Build() {
 					}).Build()
 				}
 			case forms.QuestionTypeSelect:
-				answerInt, err := strconv.Atoi(question.Answer)
+				answerInt, err := strconv.ParseInt(question.Answer, 10, 32)
 				if err != nil {
 					answerInt = 0
 				}
