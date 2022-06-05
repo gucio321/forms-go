@@ -75,10 +75,9 @@ func (f *FormsEditorWidget) Build() {
 		switch question.Type {
 		case forms.QuestionTypeText:
 		case forms.QuestionTypeTextArea:
-			break
-		case forms.QuestionTypeCheckbox:
-		case forms.QuestionTypeRadio:
-		case forms.QuestionTypeSelect:
+		case forms.QuestionTypeCheckbox,
+			forms.QuestionTypeRadio,
+			forms.QuestionTypeSelect:
 			giu.TreeNode("Options").Layout(
 				giu.Custom(func() {
 					for i, _ := range question.Options {
