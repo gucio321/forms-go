@@ -22,26 +22,26 @@ var _ giu.Widget = &FormsWidget{}
 type FormsWidget struct {
 	id        string
 	form      *forms.Form
-	formPages [][]*Question
+	formPages [][]*forms.Question
 	onSubmit  OnSubmitCallback
 }
 
 func Form(form *forms.Form) *FormsWidget {
 	result := &FormsWidget{
 		id:        giu.GenAutoID("FormsWidget"),
-		formPages: make([][]*Question, 0),
+		formPages: make([][]*forms.Question, 0),
 		form:      form,
 	}
 
-	page := make([]*Question, 0)
+	page := make([]*forms.Question, 0)
 	for _, question := range form.Questions {
 		if question == nil {
 			break
 		}
 
-		if question.Type == QuestionTypeSeparator {
+		if question.Type == forms.QuestionTypeSeparator {
 			result.formPages = append(result.formPages, page)
-			page = make([]*Question, 0)
+			page = make([]*forms.Question, 0)
 		} else {
 			page = append(page, question)
 		}
@@ -74,13 +74,13 @@ func (f *FormsWidget) Build() {
 		rows = append(rows, giu.TableRow(giu.Custom(func() {
 			giu.Label(question.Text).Build()
 			switch question.Type {
-			case QuestionTypeSeparator:
+			case forms.QuestionTypeSeparator:
 				panic("fatal: smething went wrong here")
-			case QuestionTypeText:
+			case forms.QuestionTypeText:
 				giu.InputText(&question.Answer).Build()
-			case QuestionTypeTextArea:
+			case forms.QuestionTypeTextArea:
 				giu.InputTextMultiline(&question.Answer).Build()
-			case QuestionTypeCheckbox:
+			case forms.QuestionTypeCheckbox:
 				answersStr := strings.ReplaceAll(question.Answer, " ", "")
 				answers := strings.Split(answersStr, "/\\")
 				for ; len(answers) < len(question.Options); answers = append(answers, "") {
@@ -94,7 +94,7 @@ func (f *FormsWidget) Build() {
 						question.Answer = answersStr
 					}).Build()
 				}
-			case QuestionTypeRadio:
+			case forms.QuestionTypeRadio:
 				answer, err := strconv.Atoi(question.Answer)
 				if err != nil {
 					answer = -1
@@ -105,7 +105,7 @@ func (f *FormsWidget) Build() {
 						question.Answer = strconv.Itoa(i)
 					}).Build()
 				}
-			case QuestionTypeSelect:
+			case forms.QuestionTypeSelect:
 				answerInt, err := strconv.ParseInt(question.Answer, 10, 32)
 				if err != nil {
 					answerInt = 0

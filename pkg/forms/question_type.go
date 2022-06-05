@@ -1,4 +1,4 @@
-package formswidget
+package forms
 
 // QuestionType represents a type of question
 type QuestionType byte

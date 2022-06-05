@@ -3,18 +3,17 @@ package forms
 import (
 	"fmt"
 	"github.com/gocarina/gocsv"
-	"github.com/gucio321/forms-go/pkg/formswidget"
 )
 
 // Form represents a parsable form.
 type Form struct {
-	Questions []*formswidget.Question
+	Questions []*Question
 }
 
 // NewForm returns a new form
 func NewForm() *Form {
 	return &Form{
-		Questions: make([]*formswidget.Question, 0),
+		Questions: make([]*Question, 0),
 	}
 }
 

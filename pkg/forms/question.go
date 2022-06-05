@@ -1,4 +1,4 @@
-package formswidget
+package forms
 
 // Question represents a question in a form
 type Question struct {

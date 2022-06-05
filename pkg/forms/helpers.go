@@ -1,4 +1,4 @@
-package formswidget
+package forms
 
 import "strings"
 
