@@ -2,6 +2,7 @@ package forms
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/gocarina/gocsv"
 )
@@ -19,13 +20,24 @@ const (
 	QuestionTypeSelect
 )
 
+type Options []string
+
+func (o *Options) MarshalCSV() (data string, err error) {
+	return strings.Join(*o, "/\\"), nil
+}
+
+func (o *Options) UnmarshalCSV(data string) (err error) {
+	*o = strings.Split(data, "/\\")
+	return nil
+}
+
 // Question represents a question in a form
 type Question struct {
 	Text        string       `csv:"text"`
 	Type        QuestionType `csv:"type"`
 	Placeholder string       `csv:"placeholder"`
-	Options     []string     `csv:"options"`
-	Answer      string       `csv:"answer"`
+	Options     Options
+	Answer      string `csv:"answer"`
 }
 
 // Form represents a parsable form.
