@@ -2,21 +2,56 @@ package main
 
 import (
 	_ "embed"
+	"github.com/gucio321/forms-go/pkg/formseditorwidget"
+	"github.com/gucio321/forms-go/pkg/formswidget"
 
 	"github.com/AllenDang/giu"
 	"github.com/gucio321/forms-go/pkg/forms"
-	"github.com/gucio321/forms-go/pkg/formseditorwidget"
 )
 
 //go:embed form.csv
 var data []byte
 
 var form *forms.Form
+var layout int
+
+func getMenubar() giu.Widget {
+	return giu.Layout{
+		giu.Menu("View").Layout(
+			giu.RadioButton("Editor", layout == 0).OnChange(func() {
+				layout = 0
+			}),
+			giu.RadioButton("Preview", layout == 1).OnChange(func() {
+				layout = 1
+			}),
+			giu.RadioButton("Mixed", layout == 2).OnChange(func() {
+				layout = 2
+			}),
+		),
+	}
+}
 
 func loop() {
-	giu.SingleWindow().Layout(
-		formseditorwidget.FormsEditor(form),
-	)
+	switch layout {
+	case 0:
+		giu.SingleWindowWithMenuBar().Layout(
+			giu.MenuBar().Layout(getMenubar()),
+			formseditorwidget.FormsEditor(form),
+		)
+	case 1:
+		giu.SingleWindowWithMenuBar().Layout(
+			giu.MenuBar().Layout(getMenubar()),
+			formswidget.Form(form),
+		)
+	case 2:
+		giu.MainMenuBar().Layout(getMenubar()).Build()
+		giu.Window("Editor").Layout(
+			formseditorwidget.FormsEditor(form),
+		)
+		giu.Window("Preview").Layout(
+			formswidget.Form(form),
+		)
+	}
 }
 
 func main() {
