@@ -72,7 +72,7 @@ func (f *FormsWidget) Build() {
 	rows := make([]*giu.TableRowWidget, 0)
 	for _, question := range currentPage {
 		rows = append(rows, giu.TableRow(giu.Custom(func() {
-			giu.Markdown(&question.Text).Build()
+			giu.Markdown(question.Text).Build()
 			switch question.Type {
 			case forms.QuestionTypeSeparator:
 				panic("fatal: smething went wrong here")
