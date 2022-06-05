@@ -2,6 +2,7 @@ package formswidget
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/AllenDang/giu"
@@ -111,9 +112,27 @@ func (f *FormsWidget) Build() {
 					}).Build()
 				}
 			case forms.QuestionTypeRadio:
-				//giu.RadioButton(question.Answer).Build()
+				answer, err := strconv.Atoi(question.Answer)
+				if err != nil {
+					answer = -1
+				}
+
+				for i, option := range question.Options {
+					giu.RadioButton(option, i == answer).OnChange(func() {
+						question.Answer = strconv.Itoa(i)
+					}).Build()
+				}
 			case forms.QuestionTypeSelect:
-				//giu.ComboBox(question.Answer, question.Options).Build()
+				answerInt, err := strconv.Atoi(question.Answer)
+				if err != nil {
+					answerInt = 0
+				}
+
+				answer := int32(answerInt)
+
+				giu.Combo("", question.Options[answer], question.Options, &answer).OnChange(func() {
+					question.Answer = strconv.Itoa(int(answer))
+				}).Build()
 			}
 		})))
 	}
