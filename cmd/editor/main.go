@@ -9,11 +9,17 @@ import (
 	"github.com/gucio321/forms-go/pkg/forms"
 )
 
+const (
+	windowW, windowH = 640, 480
+)
+
 //go:embed form.csv
 var data []byte
 
-var form *forms.Form
-var layout int
+var (
+	form   *forms.Form
+	layout int
+)
 
 func getMenubar() giu.Widget {
 	return giu.Layout{
@@ -45,10 +51,10 @@ func loop() {
 		)
 	case 2:
 		giu.MainMenuBar().Layout(getMenubar()).Build()
-		giu.Window("Editor").Layout(
+		giu.Window("Editor").Size(windowW/2, windowH).Layout(
 			formseditorwidget.FormsEditor(form),
 		)
-		giu.Window("Preview").Layout(
+		giu.Window("Preview").Size(windowW/2, windowH).Pos(windowW/2, 0).Layout(
 			formswidget.Form(form),
 		)
 	}
@@ -57,6 +63,6 @@ func loop() {
 func main() {
 	form = forms.NewForm()
 	form.Parse(data)
-	wnd := giu.NewMasterWindow("Form editor", 640, 480, 0)
+	wnd := giu.NewMasterWindow("Form editor", windowW, windowH, 0)
 	wnd.Run(loop)
 }
