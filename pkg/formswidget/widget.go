@@ -2,9 +2,15 @@ package formswidget
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/AllenDang/giu"
 	"github.com/gucio321/forms-go/pkg/forms"
-	"strings"
+)
+
+const (
+	buttonH = 40
+	buttonW = 150
 )
 
 var _ giu.Disposable = &formWidgetState{}
@@ -74,49 +80,63 @@ func (f *FormsWidget) Build() {
 	}
 
 	currentPage := f.formPages[state.currentPage]
-	giu.ProgressBar(float32(state.currentPage) / float32(len(f.formPages))).Build()
-	for _, question := range currentPage {
-		switch question.Type {
-		case forms.QuestionTypeSeparator:
-			panic("fatal: smething went wrong here")
-		case forms.QuestionTypeText:
-			giu.InputText(&question.Answer).Build()
-		case forms.QuestionTypeTextArea:
-			giu.InputTextMultiline(&question.Answer).Build()
-		case forms.QuestionTypeCheckbox:
-			answersStr := strings.ReplaceAll(question.Answer, " ", "")
-			answers := strings.Split(answersStr, "/\\")
-			for ; len(answers) < len(question.Options); answers = append(answers, "") {
-			}
 
-			for i, option := range question.Options {
-				answer := i < len(answers) && answers[i] == "true"
-				giu.Checkbox(option, &answer).OnChange(func() {
-					answers[i] = fmt.Sprintf("%v", answer)
-					answersStr = strings.Join(answers, "/\\")
-					question.Answer = answersStr
-				}).Build()
+	giu.ProgressBar(float32(state.currentPage)/float32(len(f.formPages))).
+		Overlayf("%d/%d", state.currentPage+1, len(f.formPages)).
+		Build()
+
+	rows := make([]*giu.TableRowWidget, 0)
+	for _, question := range currentPage {
+		rows = append(rows, giu.TableRow(giu.Custom(func() {
+			giu.Label(question.Text).Build()
+			switch question.Type {
+			case forms.QuestionTypeSeparator:
+				panic("fatal: smething went wrong here")
+			case forms.QuestionTypeText:
+				giu.InputText(&question.Answer).Build()
+			case forms.QuestionTypeTextArea:
+				giu.InputTextMultiline(&question.Answer).Build()
+			case forms.QuestionTypeCheckbox:
+				answersStr := strings.ReplaceAll(question.Answer, " ", "")
+				answers := strings.Split(answersStr, "/\\")
+				for ; len(answers) < len(question.Options); answers = append(answers, "") {
+				}
+
+				for i, option := range question.Options {
+					answer := i < len(answers) && answers[i] == "true"
+					giu.Checkbox(option, &answer).OnChange(func() {
+						answers[i] = fmt.Sprintf("%v", answer)
+						answersStr = strings.Join(answers, "/\\")
+						question.Answer = answersStr
+					}).Build()
+				}
+			case forms.QuestionTypeRadio:
+				//giu.RadioButton(question.Answer).Build()
+			case forms.QuestionTypeSelect:
+				//giu.ComboBox(question.Answer, question.Options).Build()
 			}
-		case forms.QuestionTypeRadio:
-			//giu.RadioButton(question.Answer).Build()
-		case forms.QuestionTypeSelect:
-			//giu.ComboBox(question.Answer, question.Options).Build()
-		}
+		})))
 	}
+
+	_, availableH := giu.GetAvailableRegion()
+	_, spacingH := giu.GetItemSpacing()
+	tableH := availableH - buttonH - spacingH
+	giu.Table().Rows(rows...).Size(-1, tableH).Build()
+
 	giu.Row(
 		giu.Button("Previous").OnClick(func() {
 			state.currentPage--
-		}).Disabled(state.currentPage == 0),
+		}).Disabled(state.currentPage == 0).Size(buttonW, buttonH),
 		giu.Condition(state.currentPage == len(f.formPages)-1,
 			giu.Layout{
 				giu.Button("Submit").OnClick(func() {
 					// noop
-				}),
+				}).Size(buttonW, buttonH),
 			},
 			giu.Layout{
 				giu.Button("Next").OnClick(func() {
 					state.currentPage++
-				}),
+				}).Size(buttonW, buttonH),
 			},
 		),
 	).Build()
