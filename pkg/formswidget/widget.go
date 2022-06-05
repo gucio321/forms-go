@@ -14,56 +14,34 @@ const (
 	buttonW = 150
 )
 
-var _ giu.Disposable = &formWidgetState{}
-
-type formWidgetState struct {
-	currentPage int
-}
-
-func (f *formWidgetState) Dispose() {
-	// noop
-}
-
-func (f *FormsWidget) newState() *formWidgetState {
-	return &formWidgetState{
-		currentPage: 0,
-	}
-}
-
-func (f *FormsWidget) getState() (state *formWidgetState) {
-	if s := giu.Context.GetState(f.id); s == nil {
-		state = f.newState()
-		giu.Context.SetState(f.id, state)
-	} else {
-		state = s.(*formWidgetState)
-	}
-
-	return state
-}
+type OnSubmitCallback func(form *forms.Form)
 
 // static check if FormsWidget implemented giu.Widget interface
 var _ giu.Widget = &FormsWidget{}
 
 type FormsWidget struct {
 	id        string
-	formPages [][]*forms.Question
+	form      *forms.Form
+	formPages [][]*Question
+	onSubmit  OnSubmitCallback
 }
 
 func Form(form *forms.Form) *FormsWidget {
 	result := &FormsWidget{
 		id:        giu.GenAutoID("FormsWidget"),
-		formPages: make([][]*forms.Question, 0),
+		formPages: make([][]*Question, 0),
+		form:      form,
 	}
 
-	page := make([]*forms.Question, 0)
+	page := make([]*Question, 0)
 	for _, question := range form.Questions {
 		if question == nil {
 			break
 		}
 
-		if question.Type == forms.QuestionTypeSeparator {
+		if question.Type == QuestionTypeSeparator {
 			result.formPages = append(result.formPages, page)
-			page = make([]*forms.Question, 0)
+			page = make([]*Question, 0)
 		} else {
 			page = append(page, question)
 		}
@@ -72,6 +50,11 @@ func Form(form *forms.Form) *FormsWidget {
 	result.formPages = append(result.formPages, page)
 
 	return result
+}
+
+func (f *FormsWidget) OnSubmit(cb OnSubmitCallback) *FormsWidget {
+	f.onSubmit = cb
+	return f
 }
 
 func (f *FormsWidget) Build() {
@@ -91,13 +74,13 @@ func (f *FormsWidget) Build() {
 		rows = append(rows, giu.TableRow(giu.Custom(func() {
 			giu.Label(question.Text).Build()
 			switch question.Type {
-			case forms.QuestionTypeSeparator:
+			case QuestionTypeSeparator:
 				panic("fatal: smething went wrong here")
-			case forms.QuestionTypeText:
+			case QuestionTypeText:
 				giu.InputText(&question.Answer).Build()
-			case forms.QuestionTypeTextArea:
+			case QuestionTypeTextArea:
 				giu.InputTextMultiline(&question.Answer).Build()
-			case forms.QuestionTypeCheckbox:
+			case QuestionTypeCheckbox:
 				answersStr := strings.ReplaceAll(question.Answer, " ", "")
 				answers := strings.Split(answersStr, "/\\")
 				for ; len(answers) < len(question.Options); answers = append(answers, "") {
@@ -111,7 +94,7 @@ func (f *FormsWidget) Build() {
 						question.Answer = answersStr
 					}).Build()
 				}
-			case forms.QuestionTypeRadio:
+			case QuestionTypeRadio:
 				answer, err := strconv.Atoi(question.Answer)
 				if err != nil {
 					answer = -1
@@ -122,7 +105,7 @@ func (f *FormsWidget) Build() {
 						question.Answer = strconv.Itoa(i)
 					}).Build()
 				}
-			case forms.QuestionTypeSelect:
+			case QuestionTypeSelect:
 				answerInt, err := strconv.ParseInt(question.Answer, 10, 32)
 				if err != nil {
 					answerInt = 0
@@ -149,7 +132,9 @@ func (f *FormsWidget) Build() {
 		giu.Condition(state.currentPage == len(f.formPages)-1,
 			giu.Layout{
 				giu.Button("Submit").OnClick(func() {
-					// noop
+					if f.onSubmit != nil {
+						f.onSubmit(f.form)
+					}
 				}).Size(buttonW, buttonH),
 			},
 			giu.Layout{

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gucio321/forms-go/pkg/formswidget"
 	"os"
 
 	"github.com/gucio321/forms-go/pkg/forms"
@@ -9,16 +10,16 @@ import (
 func main() {
 	form := forms.NewForm()
 	form.Questions = append(form.Questions,
-		&forms.Question{
+		&formswidget.Question{
 			Text: "Hi there!",
-			Type: forms.QuestionTypeText,
+			Type: formswidget.QuestionTypeText,
 		},
-		&forms.Question{
-			Type: forms.QuestionTypeSeparator,
+		&formswidget.Question{
+			Type: formswidget.QuestionTypeSeparator,
 		},
-		&forms.Question{
+		&formswidget.Question{
 			Text:    "Check us!",
-			Type:    forms.QuestionTypeCheckbox,
+			Type:    formswidget.QuestionTypeCheckbox,
 			Options: []string{"Me!", "And me too!"},
 		},
 	)
