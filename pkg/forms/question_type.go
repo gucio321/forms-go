@@ -1,5 +1,7 @@
 package forms
 
+//go:generate stringer -type=QuestionType -trimprefix=QuestionType
+
 // QuestionType represents a type of question
 type QuestionType byte
 

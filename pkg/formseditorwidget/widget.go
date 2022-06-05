@@ -56,6 +56,44 @@ func (f *FormsEditorWidget) Build() {
 			}).Selected(state.selectedQuestion == i).Build()
 		}
 	}), giu.Custom(func() {
+		if state.selectedQuestion < 0 || state.selectedQuestion >= len(f.form.Questions) {
+			return
+		}
 
+		question := f.form.Questions[state.selectedQuestion]
+		questionTypes := make([]string, 0)
+		for i := forms.QuestionTypeSeparator; i <= forms.QuestionTypeSelect; i++ {
+			questionTypes = append(questionTypes, i.String())
+		}
+
+		qt := int32(question.Type)
+		giu.Combo("Question Type", questionTypes[question.Type], questionTypes, &qt).OnChange(func() {
+			question.Type = forms.QuestionType(qt)
+		}).Build()
+
+		giu.InputText(&question.Text).Hint("What do you think about GO?").Label("Question Title##" + f.id).Build()
+		switch question.Type {
+		case forms.QuestionTypeText:
+		case forms.QuestionTypeTextArea:
+			break
+		case forms.QuestionTypeCheckbox:
+		case forms.QuestionTypeRadio:
+		case forms.QuestionTypeSelect:
+			giu.TreeNode("Options").Layout(
+				giu.Custom(func() {
+					for i, _ := range question.Options {
+						giu.InputText(&question.Options[i]).Hint("Option").Labelf("Option %d##%v", i, f.id).Build()
+					}
+				}),
+				giu.Row(
+					giu.Button("Add Option").OnClick(func() {
+						question.Options = append(question.Options, "")
+					}),
+					giu.Button("Remove Option").OnClick(func() {
+						question.Options = question.Options[:len(question.Options)-1]
+					}),
+				),
+			).Build()
+		}
 	})).Build()
 }
