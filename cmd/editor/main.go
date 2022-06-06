@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
+	"strconv"
 
 	"github.com/AllenDang/giu"
 	"github.com/sqweek/dialog"
@@ -66,6 +68,44 @@ func getMenubar() giu.Widget {
 				if err != nil {
 					log.Printf("Error: %v", err)
 					giu.Msgbox("Error!", fmt.Sprintf("Error saving file: %v", err))
+				}
+			}),
+			giu.MenuItem("Export").OnClick(func() {
+				formBytes, err := form.Marshal()
+				if err != nil {
+					log.Printf("Error: %v", err)
+					giu.Msgbox("Error!", fmt.Sprintf("Error marshaling form data: %v", err))
+				}
+
+				formStr := ""
+				for i := 0; i < len(formBytes); i++ {
+					formStr += strconv.Itoa(int(formBytes[i])) + "x"
+				}
+
+				if _, err := os.Stat("./compiler/main.go"); err != nil {
+					log.Printf("Error: no required project found, you have to have forms-go project downloaded")
+					giu.Msgbox("Error!", fmt.Sprintf("Error You must have forms-go project downloaded and run this app from cmd/editor, elsewhere export feature will not work"))
+				}
+
+				formStr = formStr[:len(formStr)-2]
+
+				cmd := exec.Command(
+					"bash",
+					"-c",
+					"go "+
+						"build "+
+						"-ldflags="+
+						"\"-X main.formText="+formStr+"\" "+
+						"-o "+
+						"output "+
+						"./compiler/main.go",
+				)
+				cmd.Stdout = os.Stdout
+				cmd.Stderr = os.Stderr
+				err = cmd.Run()
+				if err != nil {
+					log.Printf("Error: %v", err)
+					giu.Msgbox("Error!", fmt.Sprintf("Error exporting binary: %v", err))
 				}
 			}),
 		),
