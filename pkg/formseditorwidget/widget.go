@@ -28,16 +28,17 @@ func (f *FormsEditorWidget) Build() {
 
 	giu.Row(
 		giu.Button("Add Question").OnClick(func() {
+			newQuestion := &forms.Question{
+				Text: "New Question",
+				Type: forms.QuestionTypeText,
+			}
 			if state.selectedQuestion == -1 {
-				f.form.Questions = append(f.form.Questions, &forms.Question{
-					Text: "New Question",
-					Type: forms.QuestionTypeText,
-				})
+				f.form.Questions = append(f.form.Questions, newQuestion)
 				return
 			}
 
 			f.form.Questions = append(f.form.Questions[:state.selectedQuestion],
-				append([]*forms.Question{{}}, f.form.Questions[state.selectedQuestion:]...)...)
+				append([]*forms.Question{newQuestion}, f.form.Questions[state.selectedQuestion:]...)...)
 		}),
 		giu.Button("Remove QUestion").OnClick(func() {
 			f.form.Questions = append(f.form.Questions[:state.selectedQuestion], f.form.Questions[state.selectedQuestion+1:]...)
