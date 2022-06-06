@@ -1,7 +1,10 @@
 package formseditorwidget
 
 import (
+	"fmt"
+
 	"github.com/AllenDang/giu"
+	"github.com/AllenDang/imgui-go"
 	"github.com/gucio321/forms-go/pkg/forms"
 )
 
@@ -31,7 +34,7 @@ func (f *FormsEditorWidget) Build() {
 			}
 
 			f.form.Questions = append(f.form.Questions[:state.selectedQuestion],
-				append([]*forms.Question{&forms.Question{}}, f.form.Questions[state.selectedQuestion:]...)...)
+				append([]*forms.Question{{}}, f.form.Questions[state.selectedQuestion:]...)...)
 		}),
 		giu.Button("Remove QUestion").OnClick(func() {
 			f.form.Questions = append(f.form.Questions[:state.selectedQuestion], f.form.Questions[state.selectedQuestion+1:]...)
@@ -49,11 +52,30 @@ func (f *FormsEditorWidget) Build() {
 	).Build()
 
 	giu.SplitLayout(giu.DirectionVertical, availableH/2, giu.Custom(func() {
+		pageID := 1
+		open := imgui.TreeNode("Page 1")
 		for i, question := range f.form.Questions {
 			i := i
-			giu.Selectable(question.Text).OnClick(func() {
-				state.selectedQuestion = i
-			}).Selected(state.selectedQuestion == i).Build()
+			if question.Type == forms.QuestionTypeSeparator {
+				if open {
+					imgui.TreePop()
+				}
+				pageID++
+				open = imgui.TreeNode(fmt.Sprintf("Page %d##%v", pageID, f.id))
+				if giu.IsItemClicked(giu.MouseButtonLeft) {
+					state.selectedQuestion = i
+				}
+
+				continue
+			}
+			if open {
+				giu.Selectable(question.Text).OnClick(func() {
+					state.selectedQuestion = i
+				}).Selected(state.selectedQuestion == i).Build()
+			}
+		}
+		if open {
+			imgui.TreePop()
 		}
 	}), giu.Custom(func() {
 		if state.selectedQuestion < 0 || state.selectedQuestion >= len(f.form.Questions) {
@@ -80,7 +102,7 @@ func (f *FormsEditorWidget) Build() {
 			forms.QuestionTypeSelect:
 			giu.TreeNode("Options").Layout(
 				giu.Custom(func() {
-					for i, _ := range question.Options {
+					for i := range question.Options {
 						giu.InputText(&question.Options[i]).Hint("Option").Labelf("Option %d##%v", i, f.id).Build()
 					}
 				}),
