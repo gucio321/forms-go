@@ -37,20 +37,27 @@ func (f *FormsEditorWidget) Build() {
 				return
 			}
 
-			f.form.Questions = append(f.form.Questions[:state.selectedQuestion],
-				append([]*forms.Question{newQuestion}, f.form.Questions[state.selectedQuestion:]...)...)
+			f.form.Questions = append(
+				f.form.Questions[:state.selectedQuestion+1],
+				append(
+					[]*forms.Question{
+						newQuestion,
+					},
+					f.form.Questions[state.selectedQuestion+1:]...,
+				)...,
+			)
+
+			state.selectedQuestion++
 		}),
 		giu.Button("Remove QUestion").OnClick(func() {
 			f.form.Questions = append(f.form.Questions[:state.selectedQuestion], f.form.Questions[state.selectedQuestion+1:]...)
 		}).Disabled(state.selectedQuestion < 0 || state.selectedQuestion >= len(f.form.Questions)),
 		giu.Button("Move Up").OnClick(func() {
-			f.form.Questions[state.selectedQuestion], f.form.Questions[state.selectedQuestion-1] =
-				f.form.Questions[state.selectedQuestion-1], f.form.Questions[state.selectedQuestion]
+			f.form.Questions[state.selectedQuestion], f.form.Questions[state.selectedQuestion-1] = f.form.Questions[state.selectedQuestion-1], f.form.Questions[state.selectedQuestion]
 			state.selectedQuestion--
 		}).Disabled(state.selectedQuestion <= 0 || state.selectedQuestion > len(f.form.Questions)),
 		giu.Button("Move Down").OnClick(func() {
-			f.form.Questions[state.selectedQuestion], f.form.Questions[state.selectedQuestion+1] =
-				f.form.Questions[state.selectedQuestion+1], f.form.Questions[state.selectedQuestion]
+			f.form.Questions[state.selectedQuestion], f.form.Questions[state.selectedQuestion+1] = f.form.Questions[state.selectedQuestion+1], f.form.Questions[state.selectedQuestion]
 			state.selectedQuestion++
 		}).Disabled(state.selectedQuestion < 0 || state.selectedQuestion >= len(f.form.Questions)-1),
 	).Build()
@@ -62,6 +69,7 @@ func (f *FormsEditorWidget) Build() {
 			if question == nil {
 				break
 			}
+
 			i := i
 			if question.Type == forms.QuestionTypeSeparator {
 				if open {
@@ -75,6 +83,7 @@ func (f *FormsEditorWidget) Build() {
 
 				continue
 			}
+
 			if open {
 				giu.Selectable(question.Text).OnClick(func() {
 					state.selectedQuestion = i

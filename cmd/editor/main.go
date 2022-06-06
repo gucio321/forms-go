@@ -102,7 +102,7 @@ func getMenubar() giu.Widget {
 				)
 				cmd.Stdout = os.Stdout
 				cmd.Stderr = os.Stderr
-				err = cmd.Run()
+				err = cmd.Start()
 				if err != nil {
 					log.Printf("Error: %v", err)
 					giu.Msgbox("Error!", fmt.Sprintf("Error exporting binary: %v", err))
