@@ -29,7 +29,9 @@ func (f *FormsEditorWidget) Build() {
 	giu.Row(
 		giu.Button("Add Question").OnClick(func() {
 			if state.selectedQuestion == -1 {
-				f.form.Questions = append(f.form.Questions, &forms.Question{})
+				f.form.Questions = append(f.form.Questions, &forms.Question{
+					Type: forms.QuestionTypeText,
+				})
 				return
 			}
 
@@ -79,6 +81,7 @@ func (f *FormsEditorWidget) Build() {
 		}
 	}), giu.Custom(func() {
 		if state.selectedQuestion < 0 || state.selectedQuestion >= len(f.form.Questions) {
+			giu.Label("Please select a quesstion above").Build()
 			return
 		}
 
@@ -92,6 +95,10 @@ func (f *FormsEditorWidget) Build() {
 		giu.Combo("Question Type", questionTypes[question.Type], questionTypes, &qt).OnChange(func() {
 			question.Type = forms.QuestionType(qt)
 		}).Build()
+
+		if question.Type == forms.QuestionTypeSeparator {
+			return
+		}
 
 		giu.InputText(&question.Text).Hint("What do you think about GO?").Label("Question Title##" + f.id).Build()
 		switch question.Type {
