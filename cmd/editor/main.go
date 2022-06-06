@@ -2,11 +2,12 @@ package main
 
 import (
 	_ "embed"
-	"github.com/gucio321/forms-go/pkg/formseditorwidget"
-	"github.com/gucio321/forms-go/pkg/formswidget"
 
 	"github.com/AllenDang/giu"
+
 	"github.com/gucio321/forms-go/pkg/forms"
+	"github.com/gucio321/forms-go/pkg/formseditorwidget"
+	"github.com/gucio321/forms-go/pkg/formswidget"
 )
 
 const (
@@ -24,15 +25,17 @@ var (
 func getMenubar() giu.Widget {
 	return giu.Layout{
 		giu.Menu("View").Layout(
-			giu.RadioButton("Editor", layout == 0).OnChange(func() {
-				layout = 0
-			}),
-			giu.RadioButton("Preview", layout == 1).OnChange(func() {
-				layout = 1
-			}),
-			giu.RadioButton("Mixed", layout == 2).OnChange(func() {
-				layout = 2
-			}),
+			giu.Menu("View Mode").Layout(
+				giu.RadioButton("Editor", layout == 0).OnChange(func() {
+					layout = 0
+				}),
+				giu.RadioButton("Preview", layout == 1).OnChange(func() {
+					layout = 1
+				}),
+				giu.RadioButton("Mixed", layout == 2).OnChange(func() {
+					layout = 2
+				}),
+			),
 		),
 	}
 }
