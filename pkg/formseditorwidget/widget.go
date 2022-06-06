@@ -30,6 +30,7 @@ func (f *FormsEditorWidget) Build() {
 		giu.Button("Add Question").OnClick(func() {
 			if state.selectedQuestion == -1 {
 				f.form.Questions = append(f.form.Questions, &forms.Question{
+					Text: "New Question",
 					Type: forms.QuestionTypeText,
 				})
 				return
@@ -57,6 +58,9 @@ func (f *FormsEditorWidget) Build() {
 		pageID := 1
 		open := imgui.TreeNode("Page 1")
 		for i, question := range f.form.Questions {
+			if question == nil {
+				break
+			}
 			i := i
 			if question.Type == forms.QuestionTypeSeparator {
 				if open {

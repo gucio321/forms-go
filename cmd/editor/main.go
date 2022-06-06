@@ -2,8 +2,12 @@ package main
 
 import (
 	_ "embed"
+	"fmt"
+	"log"
+	"os"
 
 	"github.com/AllenDang/giu"
+	"github.com/sqweek/dialog"
 
 	"github.com/gucio321/forms-go/pkg/forms"
 	"github.com/gucio321/forms-go/pkg/formseditorwidget"
@@ -14,9 +18,6 @@ const (
 	windowW, windowH = 640, 480
 )
 
-//go:embed form.csv
-var data []byte
-
 var (
 	form   *forms.Form
 	layout int
@@ -24,6 +25,50 @@ var (
 
 func getMenubar() giu.Widget {
 	return giu.Layout{
+		giu.PrepareMsgbox(),
+		giu.Menu("File").Layout(
+			giu.MenuItem("New").OnClick(func() {
+				form = forms.NewForm()
+			}),
+			giu.MenuItem("Open").OnClick(func() {
+				filename, err := dialog.File().Filter("CSV file", "csv").Load()
+				if err != nil {
+					log.Printf("Error: %v", err)
+					giu.Msgbox("Error!", fmt.Sprintf("Error opening load file dialogue: %v", err))
+				}
+
+				data, err := os.ReadFile(filename)
+				if err != nil {
+					log.Printf("Error: %v", err)
+					giu.Msgbox("Error!", fmt.Sprintf("Error reading from file: %v", err))
+				}
+
+				err = form.Parse(data)
+				if err != nil {
+					log.Printf("Error: %v", err)
+					giu.Msgbox("Error!", fmt.Sprintf("Error loading file: %v", err))
+				}
+			}),
+			giu.MenuItem("Save").OnClick(func() {
+				data, err := form.Marshal()
+				if err != nil {
+					log.Printf("Error: %v", err)
+					giu.Msgbox("Error!", fmt.Sprintf("Error converting form's data: %v", err))
+				}
+
+				filename, err := dialog.File().Filter("CSV file", "csv").Save()
+				if err != nil {
+					log.Printf("Error: %v", err)
+					giu.Msgbox("Error!", fmt.Sprintf("Error opening save file dialogue: %v", err))
+				}
+
+				err = os.WriteFile(filename, data, 0o644)
+				if err != nil {
+					log.Printf("Error: %v", err)
+					giu.Msgbox("Error!", fmt.Sprintf("Error saving file: %v", err))
+				}
+			}),
+		),
 		giu.Menu("View").Layout(
 			giu.Menu("View Mode").Layout(
 				giu.RadioButton("Editor", layout == 0).OnChange(func() {
@@ -65,7 +110,6 @@ func loop() {
 
 func main() {
 	form = forms.NewForm()
-	form.Parse(data)
 	wnd := giu.NewMasterWindow("Form editor", windowW, windowH, 0)
 	wnd.Run(loop)
 }
